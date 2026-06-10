@@ -1,9 +1,55 @@
-import example.pepita
+import serviciosProfesionales.*
 
-describe "group of tests for pepita" {
+describe "Tests de Servicios Profesionales - Etapa 1" {
+    // Definimos las universidades
+    val sanMartin = new Universidad(provincia = "Buenos Aires", honorariosRecomendados = 3500)
+    val rosario = new Universidad(provincia = "Santa Fe", honorariosRecomendados = 2800)
+    val corrientes = new Universidad(provincia = "Corrientes", honorariosRecomendados = 4200)
+    val hurlingham = new Universidad(provincia = "Buenos Aires", honorariosRecomendados = 8800)
 
-  test "pepita has initial energy" {
-    assert.equals(100, pepita.energy())
-  }
+    // Definimos los profesionales
+    val juana = new ProfesionalVinculado(universidad = rosario)
+    val melina = new ProfesionalAsociado(universidad = corrientes)
+    val rocio = new ProfesionalLibre(universidad = hurlingham, honorarios = 5000, provinciasDondePuedeTrabajar = #{"Santa Fe", "Córdoba", "Buenos Aires"})
+    val luciana = new ProfesionalLibre(universidad = rosario, honorarios = 3200, provinciasDondePuedeTrabajar = #{"Santa Fe", "Entre Ríos"})
 
+    // Empresa
+    val empresa = new Empresa(honorarioReferencia = 3500)
+
+    initialize {
+        // Agregamos los profesionales a la empresa
+        empresa.profesionales().addAll(#{juana, melina, rocio, luciana})
+    }
+
+    test "Cantidad de estudiantes por universidad" {
+        assert.equals(2, empresa.cuantosEstudiaronEn(rosario))
+        assert.equals(1, empresa.cuantosEstudiaronEn(hurlingham))
+        assert.equals(0, empresa.cuantosEstudiaronEn(sanMartin))
+    }
+
+    test "Profesionales caros" {
+        // Debe devolver un conjunto con Rocío adentro
+        assert.equals(#{rocio}, empresa.profesionalesCaros())
+    }
+
+    test "Universidades formadoras" {
+        assert.equals(#{rosario, corrientes, hurlingham}, empresa.universidadesFormadoras())
+    }
+
+    test "Profesional más barato" {
+        assert.equals(juana, empresa.profesionalMasBarato())
+    }
+
+    test "Empresa es de gente acotada inicialmente" {
+        assert.that(empresa.esDeGenteAcotada())
+    }
+
+    test "Empresa deja de ser de gente acotada si a Luciana se le agregan provincias" {
+        // Modificamos a Luciana agregando dos provincias
+        luciana.provinciasDondePuedeTrabajar().add("Corrientes")
+        luciana.provinciasDondePuedeTrabajar().add("Misiones")
+        
+        // Ahora Luciana tiene 4 provincias, por ende ya no es acotada
+        assert.notThat(empresa.esDeGenteAcotada())
+    }
 }
